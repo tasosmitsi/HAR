@@ -1,4 +1,6 @@
 datasets
+figures
+intermediate_datafiles
 .ipynb_checkpoints
 .vscode
 PythonCode/intermediate_datafiles/

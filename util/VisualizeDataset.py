@@ -1,23 +1,12 @@
-from util.util import get_chapter
-
-import matplotlib.colors as cl
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 import numpy as np
-import pandas as pd
 from pathlib import Path
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.patches as mpatches
-import matplotlib.cm as cm
 from scipy.cluster.hierarchy import dendrogram
 import itertools
-from scipy.optimize import curve_fit
 import re
-import math
 import sys
 from pathlib import Path
-import dateutil
-import re
 
 class VisualizeDataset:
 
@@ -75,9 +64,8 @@ class VisualizeDataset:
             if match[i] == 'exact':
                 relevant_cols = [columns[i]]
             elif match[i] == 'like':
-                relevant_cols = self.find_cols_from_substring(names, columns[i])
-                # relevant_cols = [name for name in names if columns[i] == name[0:len(columns[i])]]
-                print(relevant_cols)
+                # relevant_cols = self.find_cols_from_substring(names, columns[i])
+                relevant_cols = [name for name in names if columns[i] == name[0:len(columns[i])]]
             else:
                 raise ValueError("Match should be 'exact' or 'like' for " + str(i) + ".")
 
@@ -137,7 +125,7 @@ class VisualizeDataset:
 
     def plot_dataset_boxplot(self, dataset, cols):
         plt.Figure(); dataset[cols].plot.box()
-        plt.ylim([-30,30])
+        # plt.ylim([-30,30])
         self.save(plt)
         plt.show()
 

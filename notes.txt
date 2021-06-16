@@ -1,0 +1,5 @@
+HAR - Human Activity Recognition
+
+Usefull liknks:
+	http://groupware.les.inf.puc-rio.br/har#dataset
+	https://www.kaggle.com/athniv/exercisepatternpredict

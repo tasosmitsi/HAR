@@ -26,7 +26,7 @@ RESULT_FNAME = 'HAR_2_' + SUBJECT_NAME + '_result.csv'
 
 # Set a granularity (the discrete step size of our time series data). We'll use a course-grained granularity of one
 # instance per minute, and a fine-grained one with four instances per second.
-GRANULARITIES = [250]
+GRANULARITIES = [6000, 1000]
 
 # We can call Path.mkdir(exist_ok=True) to make any required directories if they don't already exist.
 [path.mkdir(exist_ok=True, parents=True) for path in [DATASET_PATH, RESULT_PATH]]
@@ -59,64 +59,76 @@ for milliseconds_per_instance in GRANULARITIES:
     # We add the labels provided by the users. These are categorical events that might overlap. We add them
     # as binary attributes (i.e. add a one to the attribute representing the specific value for the label if it
     # occurs within an interval).
-    # dataset.add_event_dataset('labels.csv', 'label_start', 'label_end', 'label', 'binary')
+    dataset.add_event_dataset('labels_{}.csv'.format(SUBJECT_NAME), 'start_time', 'end_time', 'label', 'binary')
 
     # Get the resulting pandas data table
     dataset = dataset.data_table
 
     # Plot the data
-    DataViz = VisualizeDataset(__file__)
+    DataViz = VisualizeDataset('HAR_2_{}_g{}'.format(SUBJECT_NAME, milliseconds_per_instance))
 
     # Boxplot
     DataViz.plot_dataset_boxplot(dataset, ['roll_belt','pitch_belt','yaw_belt'])
 
     # Plot all data
     DataViz.plot_dataset(dataset, ['gyros_belt', 'accel_belt', 'magnet_belt',
-                                  'roll_belt','pitch_belt','yaw_belt'],
+                                  'roll_belt','pitch_belt','yaw_belt',
+                                  'label'],
 
                                   ['like', 'like', 'like',
-                                  'exact', 'exact', 'exact'],
+                                  'exact', 'exact', 'exact',
+                                  'like'],
 
                                   ['line', 'line', 'line',
-                                  'line', 'line', 'line'])
+                                  'line', 'line', 'line',
+                                  'points'])
 
     DataViz.plot_dataset(dataset, ['gyros_arm', 'accel_arm', 'magnet_arm',
-                                  'roll_arm', 'pitch_arm', 'yaw_arm'],
+                                  'roll_arm', 'pitch_arm', 'yaw_arm',
+                                  'label'],
 
                                   ['like', 'like', 'like',
-                                  'exact', 'exact', 'exact'],
+                                  'exact', 'exact', 'exact',
+                                  'like'],
 
                                   ['line', 'line', 'line',
-                                  'line', 'line', 'line'])
+                                  'line', 'line', 'line',
+                                  'points'])
 
     DataViz.plot_dataset(dataset, ['gyros_dumbbell', 'accel_dumbbell', 'magnet_dumbbell',
-                                  'roll_dumbbell', 'pitch_dumbbell', 'yaw_dumbbell'],
+                                  'roll_dumbbell', 'pitch_dumbbell', 'yaw_dumbbell',
+                                  'label'],
 
                                   ['like', 'like', 'like',
-                                  'exact', 'exact', 'exact'],
+                                  'exact', 'exact', 'exact',
+                                  'like'],
 
                                   ['line', 'line', 'line',
-                                  'line', 'line', 'line'])
+                                  'line', 'line', 'line',
+                                  'points'])
 
     DataViz.plot_dataset(dataset, ['gyros_forearm', 'accel_forearm', 'magnet_forearm',
-                                  'roll_forearm', 'pitch_forearm', 'yaw_forearm'],
+                                  'roll_forearm', 'pitch_forearm', 'yaw_forearm',
+                                  'label'],
 
                                   ['like', 'like', 'like',
-                                  'exact', 'exact', 'exact'],
+                                  'exact', 'exact', 'exact',
+                                  'like'],
 
                                   ['line', 'line', 'line',
-                                  'line', 'line', 'line'])
+                                  'line', 'line', 'line',
+                                  'points'])
 
     # And print a summary of the dataset.
     util.print_statistics(dataset)
     datasets.append(copy.deepcopy(dataset))
 
     # If needed, we could save the various versions of the dataset we create in the loop with logical filenames:
-    # dataset.to_csv(RESULT_PATH / f'chapter2_result_{milliseconds_per_instance}')
+    dataset.to_csv(RESULT_PATH / 'HAR_2_{}_g{}.csv'.format(SUBJECT_NAME, milliseconds_per_instance))
 
 
 # Make a table like the one shown in the book, comparing the two datasets produced.
 # util.print_latex_table_statistics_two_datasets(datasets[0], datasets[1])
 
 # Finally, store the last dataset we generated (last granularity).
-dataset.to_csv(RESULT_PATH / RESULT_FNAME)
+# dataset.to_csv(RESULT_PATH / RESULT_FNAME)

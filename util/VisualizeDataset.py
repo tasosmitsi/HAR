@@ -90,7 +90,7 @@ class VisualizeDataset:
                                 self.line_displays[j%len(self.line_displays)])
 
             xar[i].tick_params(axis='y', labelsize=10)
-            xar[i].legend(relevant_cols, fontsize='xx-small', numpoints=1, loc='upper center',
+            xar[i].legend(relevant_cols, fontsize='xx-small', numpoints=1, loc='center right',
                           bbox_to_anchor=(0.5, 1.3), ncol=len(relevant_cols), fancybox=True, shadow=True)
 
             xar[i].set_ylim([min(min_values) - 0.1*(max(max_values) - min(min_values)),
@@ -99,6 +99,7 @@ class VisualizeDataset:
         # Make sure we get a nice figure with only a single x-axis and labels there.
         plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
         plt.xlabel('time')
+        # plt.tight_layout()
         self.save(plt)
         plt.show()
 

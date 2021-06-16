@@ -7,12 +7,9 @@
 #                                                            #
 ##############################################################
 
-import sys
 import copy
 from pathlib import Path
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 
 from util.VisualizeDataset import VisualizeDataset
@@ -22,10 +19,13 @@ from Chapter3.ImputationMissingValues import ImputationMissingValues
 from Chapter3.KalmanFilters import KalmanFilters
 
 # Set up the file names and locations.
+GRANULARITY = 6000
+SUBJECT_NAME = 'jeremy'
 DATA_PATH = Path('./intermediate_datafiles/')    
-DATASET_FNAME = 'our_set_3_result_outliers.csv'
-RESULT_FNAME = 'our_set_3_result_final.csv'
-ORIG_DATASET_FNAME = 'our_set_2_result.csv'
+DATASET_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + GRANULARITY + '_result_outliers.csv'
+RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + GRANULARITY + '_result_final.csv'
+ORIG_DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + GRANULARITY + '.csv'
+
 
 def print_flags():
     """
@@ -48,7 +48,7 @@ def main():
         raise e
 
     # We'll create an instance of our visualization class to plot the results.
-    DataViz = VisualizeDataset(__file__)
+    DataViz = VisualizeDataset('HAR_3_final_{}_g{}'.format(SUBJECT_NAME, GRANULARITY))
     # Compute the number of milliseconds covered by an instance based on the first two rows
     milliseconds_per_instance = (
         dataset.index[1] - dataset.index[0]).microseconds/1000

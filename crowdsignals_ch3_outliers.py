@@ -10,17 +10,17 @@
 from util.VisualizeDataset import VisualizeDataset
 from Chapter3.OutlierDetection import DistributionBasedOutlierDetection
 from Chapter3.OutlierDetection import DistanceBasedOutlierDetection
-import sys
-import copy
 import pandas as pd
 import numpy as np
 from pathlib import Path
 import argparse
 
 # Set up file names and locations.
+GRANULARITY = 6000
+SUBJECT_NAME = 'jeremy'
 DATA_PATH = Path('./intermediate_datafiles/')
-DATASET_FNAME = 'our_set_2_result.csv'
-RESULT_FNAME = 'our_set_3_result_outliers.csv'
+DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + GRANULARITY + '.csv'
+RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + GRANULARITY + '_result_outliers.csv'
 
 def print_flags():
     """
@@ -43,7 +43,7 @@ def main():
         raise e
 
     # We'll create an instance of our visualization class to plot the results.
-    DataViz = VisualizeDataset(__file__)
+    DataViz = VisualizeDataset('HAR_3_outliers_{}_g{}'.format(SUBJECT_NAME, GRANULARITY))
 
 
 

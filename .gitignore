@@ -1,3 +1,5 @@
+__pycache__/
+*.pyc
 datasets
 figures
 intermediate_datafiles

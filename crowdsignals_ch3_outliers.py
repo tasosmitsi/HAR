@@ -19,8 +19,8 @@ import argparse
 GRANULARITY = 6000
 SUBJECT_NAME = 'jeremy'
 DATA_PATH = Path('./intermediate_datafiles/')
-DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + GRANULARITY + '.csv'
-RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + GRANULARITY + '_result_outliers.csv'
+DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '.csv'
+RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_outliers.csv'
 
 def print_flags():
     """
@@ -42,22 +42,28 @@ def main():
         print('File not found, try to run the preceding crowdsignals scripts first!')
         raise e
 
-    # We'll create an instance of our visualization class to plot the results.
-    DataViz = VisualizeDataset('HAR_3_outliers_{}_g{}'.format(SUBJECT_NAME, GRANULARITY))
-
-
 
     # Step 1: Let us see whether we have some outliers we would prefer to remove.
 
     # Determine the columns we want to experiment on.
-    outlier_columns = ['light_phone_lux']     # ['hr_watch_rate']    # orinally ['acc_phone_x', 'light_phone_lux']
+    outlier_columns = ['roll_belt','pitch_belt','yaw_belt','total_accel_belt','gyros_belt_x',
+                    'gyros_belt_y','gyros_belt_z','accel_belt_x','accel_belt_y','accel_belt_z',
+                    'magnet_belt_x','magnet_belt_y','magnet_belt_z','total_accel_arm',
+                    'gyros_arm_x','gyros_arm_y','gyros_arm_z','accel_arm_x','accel_arm_y','accel_arm_z','magnet_arm_x',
+                    'magnet_arm_y','magnet_arm_z','roll_dumbbell','pitch_dumbbell','yaw_dumbbell','total_accel_dumbbell',
+                    'gyros_dumbbell_x','gyros_dumbbell_y','gyros_dumbbell_z','accel_dumbbell_x','accel_dumbbell_y',
+                    'accel_dumbbell_z','magnet_dumbbell_x','magnet_dumbbell_y','magnet_dumbbell_z','roll_forearm','pitch_forearm',
+                    'yaw_forearm','total_accel_forearm','gyros_forearm_x','gyros_forearm_y','gyros_forearm_z','accel_forearm_x',
+                    'accel_forearm_y','accel_forearm_z','magnet_forearm_x','magnet_forearm_y','magnet_forearm_z']
     # Create the outlier classes.
     OutlierDistr = DistributionBasedOutlierDetection()
     OutlierDist = DistanceBasedOutlierDetection()
     #chose one of the outlier methods: chauvenet, mixture, distance or LOF via the argument parser at the bottom of this page. 
 
-    if FLAGS.mode == 'chauvenet':
+    # We'll create an instance of our visualization class to plot the results.
+    DataViz = VisualizeDataset('HAR_3_outliers_{}_g{}_{}'.format(SUBJECT_NAME, GRANULARITY, FLAGS.mode))
 
+    if FLAGS.mode == 'chauvenet':
         # And investigate the approaches for all relevant attributes.
         for col in outlier_columns:
 
@@ -65,7 +71,7 @@ def main():
 
             # And try out all different approaches. Note that we have done some optimization
             # of the parameter values for each of the approaches by visual inspection.
-            dataset = OutlierDistr.chauvenet(dataset, col)
+            dataset = OutlierDistr.chauvenet(dataset, col, c = FLAGS.C)
             DataViz.plot_binary_outliers(
                 dataset, col, col + '_outlier')
 
@@ -84,10 +90,8 @@ def main():
     elif FLAGS.mode == 'distance':
         for col in outlier_columns:
             try:
-                dataset = OutlierDist.simple_distance_based(
-                    dataset, [col], 'euclidean', FLAGS.dmin, FLAGS.fmin)
-                DataViz.plot_binary_outliers(
-                    dataset, col, 'simple_dist_outlier')
+                dataset_outliers_dist = OutlierDist.simple_distance_based(dataset.copy(), [col], 'euclidean', FLAGS.dmin, FLAGS.fmin)
+                DataViz.plot_binary_outliers(dataset_outliers_dist, col, 'simple_dist_outlier')
             except MemoryError as e:
                 print(
                     'Not enough memory available for simple distance-based outlier detection...')
@@ -96,13 +100,13 @@ def main():
     elif FLAGS.mode == 'LOF':
         for col in outlier_columns:
             try:
-                dataset = OutlierDist.local_outlier_factor(
-                    dataset, [col], 'euclidean', FLAGS.K)
-                DataViz.plot_dataset(dataset, [col, 'lof'], [
-                                     'exact', 'exact'], ['line', 'points'])
+                dataset_outliers_lof = OutlierDist.local_outlier_factor(dataset.copy(), [col], 'euclidean', FLAGS.K)
+                DataViz.plot_dataset(dataset_outliers_lof, [col, 'lof'], ['exact', 'exact'], ['line', 'points'])
             except MemoryError as e:
                 print('Not enough memory available for lof...')
                 print('Skipping.')
+
+                
 
     elif FLAGS.mode == 'final':
 
@@ -110,7 +114,7 @@ def main():
         for col in [c for c in dataset.columns if not 'label' in c]:
 
             print(f'Measurement is now: {col}')
-            dataset = OutlierDistr.chauvenet(dataset, col)
+            dataset = OutlierDistr.chauvenet(dataset, col, c = FLAGS.C)
             dataset.loc[dataset[f'{col}_outlier'] == True, col] = np.nan
             del dataset[col + '_outlier']
 
@@ -134,6 +138,9 @@ if __name__ == '__main__':
    
     parser.add_argument('--K', type=int, default=5,
                         help="Local Outlier Factor:  K is the number of neighboring points considered")
+
+    parser.add_argument('--C', type=int, default=2,
+                        help="Chauvenet's citerion")
 
     parser.add_argument('--dmin', type=float, default=0.10,     # originally, type=int
                         help="Simple distance based:  dmin is ... ")

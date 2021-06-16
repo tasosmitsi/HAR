@@ -13,7 +13,6 @@ from sklearn.mixture import GaussianMixture
 import numpy as np
 import pandas as pd
 import util.util as util
-import copy
 
 # Class for outlier detection algorithms based on some distribution of the data. They
 # all consider only single points per row (i.e. one column).
@@ -23,13 +22,12 @@ class DistributionBasedOutlierDetection:
 
     # Finds outliers in the specified column of datatable and adds a binary column with
     # the same name extended with '_outlier' that expresses the result per data point.
-    def chauvenet(self, data_table, col):
+    def chauvenet(self, data_table, col, c):
         # Taken partly from: https://www.astro.rug.nl/software/kapteyn/
 
         ''' c is a positive constant number roughly between 1 and 10 that specifies the
         degree of certainty for the identification of outliers given the assumption of a normal
         distribution. '''
-        c = 2       # added by Alex.
 
         # Computer the mean and standard deviation.
         mean = data_table[col].mean()

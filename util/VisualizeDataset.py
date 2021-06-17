@@ -48,7 +48,7 @@ class VisualizeDataset:
             f, xar = plt.subplots()
             xar = [xar]
 
-        f.subplots_adjust(hspace=0.4)
+        f.subplots_adjust(hspace=0.6)   # originally, hspace=0.4
 
         xfmt = md.DateFormatter('%H:%M')
 
@@ -90,8 +90,8 @@ class VisualizeDataset:
                                 self.line_displays[j%len(self.line_displays)])
 
             xar[i].tick_params(axis='y', labelsize=10)
-            xar[i].legend(relevant_cols, fontsize='xx-small', numpoints=1, loc='center right',
-                          bbox_to_anchor=(0.5, 1.3), ncol=len(relevant_cols), fancybox=True, shadow=True)
+            xar[i].legend(relevant_cols, fontsize='xx-small', numpoints=1, loc='upper center',
+                          bbox_to_anchor=(0.5, 1.65), ncol=len(relevant_cols), fancybox=True, shadow=True)  # originally, bbox_to_anchor=(0.5, 1.3)
 
             xar[i].set_ylim([min(min_values) - 0.1*(max(max_values) - min(min_values)),
                              max(max_values) + 0.1*(max(max_values) - min(min_values))])
@@ -170,19 +170,19 @@ class VisualizeDataset:
             f, xar = plt.subplots()
             xar = [xar]
 
-        f.subplots_adjust(hspace=0.4)
+        f.subplots_adjust(hspace=0.4)   # originally, hspace=0.4
 
         # plot the regular dataset.
 
         xar[0].xaxis.set_major_formatter(xfmt)
         xar[0].plot(data_table.index[data_table[col].notnull()], data_table[col][data_table[col].notnull()], 'b+', markersize='2')
-        xar[0].legend([names[0]], fontsize='small', numpoints=1, loc='upper center',  bbox_to_anchor=(0.5, 1.3), ncol=1, fancybox=True, shadow=True)
+        xar[0].legend([names[0]], fontsize='small', numpoints=1, loc='upper center',  bbox_to_anchor=(0.5, 1.65), ncol=1, fancybox=True, shadow=True)   # originally, bbox_to_anchor=(0.5, 1.3)
 
         # and plot the others that have resulted from imputation.
         for i in range(1, len(values)+1):
             xar[i].xaxis.set_major_formatter(xfmt)
             xar[i].plot(data_table.index, values[i-1], 'b+', markersize='2')
-            xar[i].legend([names[i]], fontsize='small', numpoints=1, loc='upper center',  bbox_to_anchor=(0.5, 1.3), ncol=1, fancybox=True, shadow=True)
+            xar[i].legend([names[i]], fontsize='small', numpoints=1, loc='upper center',  bbox_to_anchor=(0.5, 1.65), ncol=1, fancybox=True, shadow=True)   # originally, bbox_to_anchor=(0.5, 1.3)
 
         # Diplay is nicely in subplots.
         plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)

@@ -7,7 +7,6 @@
 #                                                            #
 ##############################################################
 
-import copy
 import pandas as pd
 import time
 from pathlib import Path
@@ -108,7 +107,7 @@ def main():
         # Frequency domain feature engineering - Example list:
         periodic_predictor_cols = ['roll_belt','pitch_belt','yaw_belt'] # Please specifiy the columns to be used.
     
-        dataset = FreqAbs.abstract_frequency(copy.deepcopy(dataset), periodic_predictor_cols, int(float(10000)/milliseconds_per_instance), fs)
+        dataset = FreqAbs.abstract_frequency(dataset.copy(), periodic_predictor_cols, int(float(10000)/milliseconds_per_instance), fs)
 
 
         # Now we only take a certain percentage of overlap in the windows, otherwise our training examples will be too much alike.

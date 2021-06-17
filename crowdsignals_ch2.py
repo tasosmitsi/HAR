@@ -26,7 +26,7 @@ RESULT_FNAME = 'HAR_2_' + SUBJECT_NAME + '_result.csv'
 
 # Set a granularity (the discrete step size of our time series data). We'll use a course-grained granularity of one
 # instance per minute, and a fine-grained one with four instances per second.
-GRANULARITIES = [6000, 1000]
+GRANULARITIES = [250, 50]
 
 # We can call Path.mkdir(exist_ok=True) to make any required directories if they don't already exist.
 [path.mkdir(exist_ok=True, parents=True) for path in [DATASET_PATH, RESULT_PATH]]

@@ -16,7 +16,7 @@ from pathlib import Path
 import argparse
 
 # Set up file names and locations.
-GRANULARITY = 6000
+GRANULARITY = 250
 SUBJECT_NAME = 'jeremy'
 DATA_PATH = Path('./intermediate_datafiles/')
 DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '.csv'

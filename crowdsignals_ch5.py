@@ -7,19 +7,13 @@
 #                                                            #
 ##############################################################
 
-from Chapter5.DistanceMetrics import InstanceDistanceMetrics
-from Chapter5.DistanceMetrics import PersonDistanceMetricsNoOrdering
-from Chapter5.DistanceMetrics import PersonDistanceMetricsOrdering
 from Chapter5.Clustering import NonHierarchicalClustering
 from Chapter5.Clustering import HierarchicalClustering
 import util.util as util
 from util.VisualizeDataset import VisualizeDataset
 
-import sys
-import copy
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from pathlib import Path
 import argparse
 
@@ -27,11 +21,13 @@ import argparse
 def main():
 
     # As usual, we set our program constants, read the input file and initialize a visualization object.
+    GRANULARITY = 250
+    SUBJECT_NAME = 'jeremy'
     DATA_PATH = Path('./intermediate_datafiles/')
-    DATASET_FNAME = 'chapter4_result.csv'
-    RESULT_FNAME = 'chapter5_result.csv'
+    DATASET_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+    RESULT_FNAME = 'HAR_5_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
 
-    columns = ['acc_phone_x', 'acc_phone_y', 'acc_phone_z']
+    COLUMNS = ['roll_belt','pitch_belt','yaw_belt']
 
     try:
         dataset = pd.read_csv(DATA_PATH / DATASET_FNAME, index_col=0)
@@ -40,7 +36,7 @@ def main():
         print('File not found, try to run previous crowdsignals scripts first!')
         raise e
 
-    DataViz = VisualizeDataset(__file__)
+    DataViz = VisualizeDataset('HAR_5_{}_g{}_{}'.format(SUBJECT_NAME, GRANULARITY, FLAGS.mode))
 
     clusteringNH = NonHierarchicalClustering()
     clusteringH = HierarchicalClustering()
@@ -51,12 +47,10 @@ def main():
         silhouette_values = []
 
         # Do some initial runs to determine the right number for k
-
         print('===== kmeans clustering =====')
         for k in k_values:
             print(f'k = {k}')
-            dataset_cluster = clusteringNH.k_means_over_instances(copy.deepcopy(
-                dataset), columns, k, 'default', 20, 10)
+            dataset_cluster = clusteringNH.k_means_over_instances(dataset.copy(), COLUMNS, k, 'default', 20, 10)
             silhouette_score = dataset_cluster['silhouette'].mean()
             print(f'silhouette = {silhouette_score}')
             silhouette_values.append(silhouette_score)
@@ -65,11 +59,10 @@ def main():
                         ylim=[0, 1], line_styles=['b-'])
 
         # And run the knn with the highest silhouette score
-
         k = k_values[np.argmax(silhouette_values)]
 
-        dataset = clusteringNH.k_means_over_instances(copy.deepcopy(dataset), columns, k, 'default', 20, 10)
-        DataViz.plot_clusters_3d(dataset, columns, 'cluster', ['label'])
+        dataset = clusteringNH.k_means_over_instances(dataset.copy(), COLUMNS, k, 'default', 20, 10)
+        DataViz.plot_clusters_3d(dataset, COLUMNS, 'cluster', ['label'])
         DataViz.plot_silhouette(dataset, 'cluster', 'silhouette')
 
 
@@ -77,7 +70,6 @@ def main():
         print('Use this value of k to run the --mode=final --k=?')
 
     if FLAGS.mode == 'kmedoids':
-        
         # Do some initial runs to determine the right number for k
         k_values = range(2, 10)
         silhouette_values = []
@@ -85,7 +77,7 @@ def main():
 
         for k in k_values:
             print(f'k = {k}')
-            dataset_cluster = clusteringNH.k_medoids_over_instances(copy.deepcopy(dataset), columns, k, 'default', 20, n_inits=10)
+            dataset_cluster = clusteringNH.k_medoids_over_instances(dataset.copy(), COLUMNS, k, 'default', 20, n_inits=10)
             silhouette_score = dataset_cluster['silhouette'].mean()
             print(f'silhouette = {silhouette_score}')
             silhouette_values.append(silhouette_score)
@@ -94,28 +86,24 @@ def main():
                         ylim=[0, 1], line_styles=['b-'])
 
         # And run k medoids with the highest silhouette score
-
-        
         k = k_values[np.argmax(silhouette_values)]
         print(f'Highest K-Medoids silhouette score: k = {k}')
 
-        dataset_kmed = clusteringNH.k_medoids_over_instances(copy.deepcopy(dataset), columns, k, 'default', 20, n_inits=50)
-        DataViz.plot_clusters_3d(dataset_kmed, columns, 'cluster', ['label'])
+        dataset_kmed = clusteringNH.k_medoids_over_instances(dataset.copy(), COLUMNS, k, 'default', 20, n_inits=50)
+        DataViz.plot_clusters_3d(dataset_kmed, COLUMNS, 'cluster', ['label'])
         DataViz.plot_silhouette(dataset_kmed, 'cluster', 'silhouette')
-        util.print_latex_statistics_clusters(dataset_kmed, 'cluster', columns, 'label')
+        util.print_latex_statistics_clusters(dataset_kmed, 'cluster', COLUMNS, 'label')
 
     # And the hierarchical clustering is the last one we try
     if FLAGS.mode == 'agglomerative':
-
         k_values = range(2, 10)
         silhouette_values = []
 
         # Do some initial runs to determine the right number for the maximum number of clusters.
-
         print('===== agglomerative clustering =====')
         for k in k_values:
             print(f'k = {k}')
-            dataset, l = clusteringH.agglomerative_over_instances(dataset, columns, k, 'euclidean', use_prev_linkage=True, link_function='ward')
+            dataset, l = clusteringH.agglomerative_over_instances(dataset, COLUMNS, k, 'euclidean', use_prev_linkage=True, link_function='ward')
             silhouette_score = dataset['silhouette'].mean()
             print(f'silhouette = {silhouette_score}')
             silhouette_values.append(silhouette_score)
@@ -126,15 +114,13 @@ def main():
                         ylim=[0, 1], line_styles=['b-'])
 
     if FLAGS.mode == 'final':
-
         # And we select the outcome dataset of the knn clustering....
         clusteringNH = NonHierarchicalClustering()
 
-        dataset = clusteringNH.k_means_over_instances(dataset, columns, FLAGS.k, 'default', 50, 50)
-        DataViz.plot_clusters_3d(dataset, columns, 'cluster', ['label'])
+        dataset = clusteringNH.k_means_over_instances(dataset, COLUMNS, FLAGS.k, 'default', 50, 50)
+        DataViz.plot_clusters_3d(dataset, COLUMNS, 'cluster', ['label'])
         DataViz.plot_silhouette(dataset, 'cluster', 'silhouette')
-        util.print_latex_statistics_clusters(
-            dataset, 'cluster', columns, 'label')
+        util.print_latex_statistics_clusters(dataset, 'cluster', COLUMNS, 'label')
         del dataset['silhouette']
 
         dataset.to_csv(DATA_PATH / RESULT_FNAME)

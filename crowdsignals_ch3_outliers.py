@@ -16,11 +16,9 @@ from pathlib import Path
 import argparse
 
 # Set up file names and locations.
-GRANULARITY = 250
-SUBJECT_NAME = 'jeremy'
+GRANULARITIES = [250, 50]
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
-DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '.csv'
-RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_outliers.csv'
 
 def print_flags():
     """
@@ -80,7 +78,7 @@ def main():
         for col in outlier_columns:
 
             print(f"Applying mixture model for column {col}")
-            dataset = OutlierDistr.mixture_model(dataset, col)
+            dataset = OutlierDistr.mixture_model(dataset, col, comp = FLAGS.COMP, init = FLAGS.INIT)
             DataViz.plot_dataset(dataset, [
                                  col, col + '_mixture'], ['exact', 'exact'], ['line', 'points'])
             # This requires:
@@ -148,6 +146,16 @@ if __name__ == '__main__':
     parser.add_argument('--fmin', type=float, default=0.99,     # originally, type=int
                         help="Simple distance based:  fmin is ... ")
 
+    parser.add_argument('--COMP', type=int, default=2,
+                        help="Number of components")
+
+    parser.add_argument('--INIT', type=int, default=1,
+                        help="Number of initializations")
+
     FLAGS, unparsed = parser.parse_known_args()
 
-    main()
+    for SUBJECT_NAME in SUBJECT_NAMES:
+        for GRANULARITY in GRANULARITIES:
+            DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '.csv'
+            RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_outliers.csv'
+            main()

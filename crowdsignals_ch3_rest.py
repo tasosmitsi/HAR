@@ -19,12 +19,9 @@ from Chapter3.ImputationMissingValues import ImputationMissingValues
 from Chapter3.KalmanFilters import KalmanFilters
 
 # Set up the file names and locations.
-GRANULARITY = 250
-SUBJECT_NAME = 'jeremy'
+GRANULARITIES = [250, 50]
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')    
-DATASET_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_outliers.csv'
-RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_final.csv'
-ORIG_DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '.csv'
 
 
 COLUMNS = ['roll_belt','pitch_belt','yaw_belt','total_accel_belt','gyros_belt_x',
@@ -191,4 +188,12 @@ if __name__ == '__main__':
 
    
     FLAGS, unparsed = parser.parse_known_args()
-    main()
+
+    for SUBJECT_NAME in SUBJECT_NAMES:
+        for GRANULARITY in GRANULARITIES:
+
+            DATASET_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_outliers.csv'
+            RESULT_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_final.csv'
+            ORIG_DATASET_FNAME = 'HAR_2_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '.csv'
+            
+            main()

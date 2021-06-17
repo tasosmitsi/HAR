@@ -17,16 +17,12 @@ import pandas as pd
 from pathlib import Path
 import argparse
 
+# As usual, we set our program constants, read the input file and initialize a visualization object.
+GRANULARITIES = [250, 50]
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
+DATA_PATH = Path('./intermediate_datafiles/')
 
 def main():
-
-    # As usual, we set our program constants, read the input file and initialize a visualization object.
-    GRANULARITY = 250
-    SUBJECT_NAME = 'jeremy'
-    DATA_PATH = Path('./intermediate_datafiles/')
-    DATASET_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
-    RESULT_FNAME = 'HAR_5_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
-
     COLUMNS = ['roll_belt','pitch_belt','yaw_belt']
 
     try:
@@ -142,4 +138,9 @@ if __name__ == '__main__':
 
     FLAGS, unparsed = parser.parse_known_args()
 
-    main()
+    for SUBJECT_NAME in SUBJECT_NAMES:
+        for GRANULARITY in GRANULARITIES:
+            DATASET_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+            RESULT_FNAME = 'HAR_5_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+
+            main()

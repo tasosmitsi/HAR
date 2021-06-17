@@ -17,14 +17,11 @@ from util.VisualizeDataset import VisualizeDataset
 from Chapter4.TemporalAbstraction import NumericalAbstraction
 from Chapter4.TemporalAbstraction import CategoricalAbstraction
 from Chapter4.FrequencyAbstraction import FourierTransformation
-from Chapter4.TextAbstraction import TextAbstraction
 
 # Read the result from the previous chapter, and make sure the index is of the type datetime.
-GRANULARITY = 250
-SUBJECT_NAME = 'jeremy'
+GRANULARITIES = [250, 50]
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
-DATASET_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_final.csv'
-RESULT_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
 
 # Include the columns you want to experiment with. It works only with aggregation and frequency methods NOT final.
 COLUMNS = ['roll_belt','pitch_belt','yaw_belt']
@@ -139,5 +136,8 @@ if __name__ == '__main__':
     
 
     FLAGS, unparsed = parser.parse_known_args()
-    
-    main()
+    for SUBJECT_NAME in SUBJECT_NAMES:
+        for GRANULARITY in GRANULARITIES:
+            DATASET_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_final.csv'
+            RESULT_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+            main()

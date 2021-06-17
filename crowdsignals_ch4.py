@@ -7,12 +7,12 @@
 #                                                            #
 ##############################################################
 
-import sys
 import copy
 import pandas as pd
 import time
 from pathlib import Path
 import argparse
+import numpy as np
 
 from util.VisualizeDataset import VisualizeDataset
 from Chapter4.TemporalAbstraction import NumericalAbstraction
@@ -21,9 +21,14 @@ from Chapter4.FrequencyAbstraction import FourierTransformation
 from Chapter4.TextAbstraction import TextAbstraction
 
 # Read the result from the previous chapter, and make sure the index is of the type datetime.
+GRANULARITY = 250
+SUBJECT_NAME = 'jeremy'
 DATA_PATH = Path('./intermediate_datafiles/')
-DATASET_FNAME = 'chapter3_result_final.csv'
-RESULT_FNAME = 'chapter4_result.csv'
+DATASET_FNAME = 'HAR_3_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result_final.csv'
+RESULT_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+
+# Include the columns you want to experiment with. It works only with aggregation and frequency methods NOT final.
+COLUMNS = ['roll_belt','pitch_belt','yaw_belt']
 
 def print_flags():
     """
@@ -31,7 +36,6 @@ def print_flags():
     """
     for key, value in vars(FLAGS).items():
         print(key + ' : ' + str(value))
-
 
 
 def main():
@@ -45,46 +49,50 @@ def main():
         print('File not found, try to run previous crowdsignals scripts first!')
         raise e
 
-    
 
     # Let us create our visualization class again.
-    DataViz = VisualizeDataset(__file__)
+    DataViz = VisualizeDataset('HAR_4_{}_g{}_{}'.format(SUBJECT_NAME, GRANULARITY, FLAGS.mode))
 
     # Compute the number of milliseconds covered by an instance based on the first two rows
-    milliseconds_per_instance = (dataset.index[1] - dataset.index[0]).microseconds/1000
+    milliseconds_per_instance = (dataset.index[1] - dataset.index[0]).to_numpy() / np.timedelta64(1, 'ms')
 
     NumAbs = NumericalAbstraction()
     FreqAbs = FourierTransformation()
 
+
     if FLAGS.mode == 'aggregation':
         # Chapter 4: Identifying aggregate attributes.
-
         # Set the window sizes to the number of instances representing 5 seconds, 30 seconds and 5 minutes
         window_sizes = [int(float(5000)/milliseconds_per_instance), int(float(0.5*60000)/milliseconds_per_instance), int(float(5*60000)/milliseconds_per_instance)]
 
          #please look in Chapter4 TemporalAbstraction.py to look for more aggregation methods or make your own.     
         
         for ws in window_sizes:
-                   
-            dataset = NumAbs.abstract_numerical(dataset, ['acc_phone_x'], ws, 'mean')
-            dataset = NumAbs.abstract_numerical(dataset, ['acc_phone_x'], ws, 'std')
+                dataset = NumAbs.abstract_numerical(dataset, COLUMNS, ws, 'mean')
+                dataset = NumAbs.abstract_numerical(dataset, COLUMNS, ws, 'std')
 
-        DataViz.plot_dataset(dataset, ['acc_phone_x', 'acc_phone_x_temp_mean', 'acc_phone_x_temp_std', 'label'], ['exact', 'like', 'like', 'like'], ['line', 'line', 'line', 'points'])
+        DataViz.plot_dataset(dataset,
+                            COLUMNS + ['label'],
+                            ['like'] * len(COLUMNS) + ['like'],
+                            ['line'] * len(COLUMNS) + ['points'])
+
         print("--- %s seconds ---" % (time.time() - start_time))
-  
+
+
     if FLAGS.mode == 'frequency':
         # Now we move to the frequency domain, with the same window size.
-       
         fs = float(1000)/milliseconds_per_instance
         ws = int(float(10000)/milliseconds_per_instance)
-        dataset = FreqAbs.abstract_frequency(dataset, ['acc_phone_x'], ws, fs)
+        dataset = FreqAbs.abstract_frequency(dataset, COLUMNS, ws, fs)
         # Spectral analysis.
-        DataViz.plot_dataset(dataset, ['acc_phone_x_max_freq', 'acc_phone_x_freq_weighted', 'acc_phone_x_pse', 'label'], ['like', 'like', 'like', 'like'], ['line', 'line', 'line','points'])
+        DataViz.plot_dataset(dataset,
+                            COLUMNS + ['label'],
+                            ['like'] * len(COLUMNS) + ['like'],
+                            ['line'] * len(COLUMNS) + ['points'])
         print("--- %s seconds ---" % (time.time() - start_time))
-  
-    if FLAGS.mode == 'final':
-        
 
+
+    if FLAGS.mode == 'final':
         ws = int(float(0.5*60000)/milliseconds_per_instance)
         fs = float(1000)/milliseconds_per_instance
 
@@ -93,39 +101,31 @@ def main():
         dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mean')
         dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'std')
         # TODO: Add your own aggregation methods here
-        
-        # DataViz.plot_dataset(dataset, ['acc_phone_x', 'gyr_phone_x', 'hr_watch_rate', 'light_phone_lux', 'mag_phone_x', 'press_phone_', 'pca_1', 'label'],
-        #                                 ['like', 'like', 'like', 'like', 'like', 'like', 'like','like'],
-        #                                 ['line', 'line', 'line', 'line', 'line', 'line', 'line', 'points'])
-
      
         CatAbs = CategoricalAbstraction()
-        
         dataset = CatAbs.abstract_categorical(dataset, ['label'], ['like'], 0.03, int(float(5*60000)/milliseconds_per_instance), 2)
 
-
-        periodic_predictor_cols = ['acc_phone_x' ,'acc_phone_y', 'acc_phone_z',
-                                    'acc_watch_x','acc_watch_y','acc_watch_z','gyr_phone_x','gyr_phone_y',
-                                'gyr_phone_z','gyr_watch_x','gyr_watch_y','gyr_watch_z','mag_phone_x','mag_phone_y','mag_phone_z',
-                                'mag_watch_x','mag_watch_y','mag_watch_z']
-        # periodic_predictor_cols = ['acc_phone_x', 'acc_phone_y', 'acc_phone_z', 'light_phone_illuminance', 'prox_phone_distance']
-
-
-        
+        # Frequency domain feature engineering - Example list:
+        periodic_predictor_cols = ['roll_belt','pitch_belt','yaw_belt'] # Please specifiy the columns to be used.
+    
         dataset = FreqAbs.abstract_frequency(copy.deepcopy(dataset), periodic_predictor_cols, int(float(10000)/milliseconds_per_instance), fs)
 
 
         # Now we only take a certain percentage of overlap in the windows, otherwise our training examples will be too much alike.
-
         # The percentage of overlap we allow
         window_overlap = 0.9
         skip_points = int((1-window_overlap) * ws)
         dataset = dataset.iloc[::skip_points,:]
 
-
+        # Save the result file
         dataset.to_csv(DATA_PATH / RESULT_FNAME)
 
-        # DataViz.plot_dataset(dataset, ['acc_phone_x', 'gyr_phone_x', 'hr_watch_rate', 'light_phone_lux', 'mag_phone_x', 'press_phone_', 'pca_1', 'label'], ['like', 'like', 'like', 'like', 'like', 'like', 'like','like'], ['line', 'line', 'line', 'line', 'line', 'line', 'line', 'points'])
+        # Visualize if necessary
+        # DataViz.plot_dataset(dataset, 
+        #                     ['acc_phone_x', 'gyr_phone_x', 'hr_watch_rate', 'light_phone_lux', 'mag_phone_x', 'press_phone_', 'pca_1', 'label'],
+        #                     ['like', 'like', 'like', 'like', 'like', 'like', 'like','like'],
+        #                     ['line', 'line', 'line', 'line', 'line', 'line', 'line', 'points'])
+
         print("--- %s seconds ---" % (time.time() - start_time))
   
 if __name__ == '__main__':

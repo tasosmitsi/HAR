@@ -9,6 +9,9 @@
 
 import numpy as np
 import scipy.stats as stats
+import pandas as pd
+import scipy.stats as stats
+from scipy.stats import entropy
 
 # Class to abstract a history of numerical values we can use as an attribute.
 class NumericalAbstraction:
@@ -33,6 +36,14 @@ class NumericalAbstraction:
 
     #TODO Add your own aggregation function here:
     # def my_aggregation_function(self, data) 
+    def get_mad(self, data):
+        output = pd.DataFrame(data).mad()
+        return output
+
+    def get_entropy(self, data):
+        data = data.abs()
+        output = entropy((data/data.sum()), base = 2)
+        return output
 
     # This function aggregates a list of values using the specified aggregation
     # function (which can be 'mean', 'max', 'min', 'median', 'std', 'slope')
@@ -49,8 +60,26 @@ class NumericalAbstraction:
             return data.rolling(window, min_periods=window_size).median()
         elif aggregation_function == 'std':
             return data.rolling(window, min_periods=window_size).std()
+        elif aggregation_function == 'var':
+            return data.rolling(window, min_periods=window_size).var()
         elif aggregation_function == 'slope':
             return data.rolling(window, min_periods=window_size).apply(self.get_slope)
+        elif aggregation_function == 'mad':
+            return data.rolling(window, min_periods=window_size).apply(self.get_mad)
+        elif aggregation_function == 'entropy':
+            return data.rolling(window, min_periods=window_size).apply(self.get_entropy)
+        elif aggregation_function == 'SMA':
+
+            def get_SMA(ser):
+                col1 = data.loc[ser.index, [True, False, False]].abs()
+                col2 = data.loc[ser.index, [False, True, False]].abs()
+                col3 = data.loc[ser.index, [False, False, True]].abs()
+
+                lenght = len(col1)
+                output = (float(col1.sum()) + float(col2.sum()) + float(col3.sum())) / lenght
+                return output
+
+            return data.iloc[:,0].rolling(window, min_periods=window_size).apply(get_SMA, raw=False)
         
         #TODO: add your own aggregation function here
         else:
@@ -64,6 +93,13 @@ class NumericalAbstraction:
             aggregations = self.aggregate_value(data_table[col], window_size, aggregation_function_name)
             data_table[col + '_temp_' + aggregation_function_name + '_ws_' + str(window_size)] = aggregations
       
+        
+        return data_table
+
+    def abstract_numerical_specific_cols(self, data_table, cols, window_size, aggregation_function_name):
+
+        aggregations = self.aggregate_value(data_table[cols], window_size, aggregation_function_name)
+        data_table[cols[0] + '_y_z' + '_temp_' + aggregation_function_name + '_ws_' + str(window_size)] = aggregations
         
         return data_table
 

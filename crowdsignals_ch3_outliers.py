@@ -16,7 +16,7 @@ from pathlib import Path
 import argparse
 
 # Set up file names and locations.
-GRANULARITIES = [250, 50]
+GRANULARITIES = [50]
 SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
@@ -89,7 +89,7 @@ def main():
         for col in outlier_columns:
             try:
                 dataset_outliers_dist = OutlierDist.simple_distance_based(dataset.copy(), [col], 'euclidean', FLAGS.dmin, FLAGS.fmin)
-                DataViz.plot_binary_outliers(dataset_outliers_dist, col, 'simple_dist_outlier')
+                DataViz.plot_binary_outliers(dataset_outliers_dist, col, col + '_outlier')
             except MemoryError as e:
                 print(
                     'Not enough memory available for simple distance-based outlier detection...')
@@ -112,7 +112,8 @@ def main():
         for col in [c for c in dataset.columns if not 'label' in c]:
 
             print(f'Measurement is now: {col}')
-            dataset = OutlierDistr.chauvenet(dataset, col, c = FLAGS.C)
+            # dataset = OutlierDistr.chauvenet(dataset, col, c = FLAGS.C)
+            dataset = OutlierDist.simple_distance_based(dataset.copy(), [col], 'euclidean', FLAGS.dmin, FLAGS.fmin)
             dataset.loc[dataset[f'{col}_outlier'] == True, col] = np.nan
             del dataset[col + '_outlier']
 

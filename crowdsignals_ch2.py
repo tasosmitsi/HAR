@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Set a granularity (the discrete step size of our time series data). We'll use a course-grained granularity of one
 # instance per minute, and a fine-grained one with four instances per second.
-GRANULARITIES = [250, 50]
+GRANULARITIES = [50]
 SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 
 # Chapter 2: Initial exploration of the dataset.

@@ -19,7 +19,7 @@ from Chapter3.ImputationMissingValues import ImputationMissingValues
 from Chapter3.KalmanFilters import KalmanFilters
 
 # Set up the file names and locations.
-GRANULARITIES = [250, 50]
+GRANULARITIES = [50]
 SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')    
 
@@ -106,9 +106,9 @@ def main():
         fs = float(1)/milliseconds_per_instance
         cutoff = 1.5
         # Let us study acc_phone_x:
-        new_dataset = LowPass.low_pass_filter(dataset.copy(), 'acc_phone_x', fs, cutoff, order=10)
+        new_dataset = LowPass.low_pass_filter(dataset.copy(), 'roll_belt', fs, cutoff, order=10)
         DataViz.plot_dataset(new_dataset.iloc[int(0.4*len(new_dataset.index)):int(0.43*len(new_dataset.index)), :],
-                             ['acc_phone_x', 'acc_phone_x_lowpass'], ['exact', 'exact'], ['line', 'line'])
+                             ['roll_belt', 'roll_belt_lowpass'], ['exact', 'exact'], ['line', 'line'])
 
     elif FLAGS.mode == 'PCA':
 
@@ -117,8 +117,7 @@ def main():
             dataset = MisVal.impute_interpolate(dataset, col)
 
        
-        selected_predictor_cols = [c for c in dataset.columns if (
-            not ('label' in c)) and (not (c == 'hr_watch_rate'))]
+        selected_predictor_cols = [c for c in dataset.columns if (not ('label' in c)) and (not (dataset.loc[:,c] == 0).all())]
         pc_values = PCA.determine_pc_explained_variance(
             dataset, selected_predictor_cols)
 
@@ -129,7 +128,7 @@ def main():
 
         # We select 7 as the best number of PC's as this explains most of the variance
 
-        n_pcs = 7
+        n_pcs = 5
 
         dataset = PCA.apply_pca(dataset.copy(), selected_predictor_cols, n_pcs)
 
@@ -152,7 +151,7 @@ def main():
 
         # Determine the sampling frequency.
         fs = float(1)/milliseconds_per_instance
-        cutoff = 1.5
+        cutoff = 1
 
         for col in periodic_measurements:
             dataset = LowPass.low_pass_filter(dataset, col, fs, cutoff, order=10)
@@ -160,17 +159,17 @@ def main():
             del dataset[col + '_lowpass']
 
         # We used the optimal found parameter n_pcs = 7, to apply PCA to the final dataset
-        selected_predictor_cols = [c for c in dataset.columns if (not ('label' in c)) and (not (c == 'hr_watch_rate'))]
+        selected_predictor_cols = [c for c in dataset.columns if (not ('label' in c)) and (not (dataset.loc[:,c] == 0).all())]
         
-        n_pcs = len(COLUMNS)
+        n_pcs = 5
         
         dataset = PCA.apply_pca(dataset.copy(), selected_predictor_cols, n_pcs)
 
         # And the overall final dataset:
-        DataViz.plot_dataset(dataset, 
-                            COLUMNS + ['pca_', 'label'],
-                            ['exact'] * len(COLUMNS) + ['like', 'like'],
-                            ['line'] * len(COLUMNS) + ['points', 'points'])
+        # DataViz.plot_dataset(dataset, 
+        #                     COLUMNS + ['pca_', 'label'],
+        #                     ['exact'] * len(COLUMNS) + ['like', 'like'],
+        #                     ['line'] * len(COLUMNS) + ['points', 'points'])
 
         # Store the final outcome.
         dataset.to_csv(DATA_PATH / RESULT_FNAME)

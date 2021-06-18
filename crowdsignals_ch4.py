@@ -19,8 +19,8 @@ from Chapter4.TemporalAbstraction import CategoricalAbstraction
 from Chapter4.FrequencyAbstraction import FourierTransformation
 
 # Read the result from the previous chapter, and make sure the index is of the type datetime.
-GRANULARITIES = [250, 50]
-SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
+GRANULARITIES = [50]
+SUBJECT_NAMES = ['jeremy']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 # Include the columns you want to experiment with. It works only with aggregation and frequency methods NOT final.
@@ -96,13 +96,21 @@ def main():
 
         dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mean')
         dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'std')
-        # TODO: Add your own aggregation methods here
+        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'slope')
+        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'median')
+        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'min')
+        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'max')
+        # TODO: Add your own aggregation methods here 
+        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mad')
+        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'entropy')
+
+        dataset = NumAbs.abstract_numerical_specific_cols(dataset, ['accel_belt_x','accel_belt_y','accel_belt_z'], ws, 'SMA')
      
         CatAbs = CategoricalAbstraction()
         dataset = CatAbs.abstract_categorical(dataset, ['label'], ['like'], 0.03, int(float(5*60000)/milliseconds_per_instance), 2)
 
         # Frequency domain feature engineering - Example list:
-        periodic_predictor_cols = ['roll_belt','pitch_belt','yaw_belt'] # Please specifiy the columns to be used.
+        periodic_predictor_cols = ['accel_belt_x'] # Please specifiy the columns to be used.
     
         dataset = FreqAbs.abstract_frequency(dataset.copy(), periodic_predictor_cols, int(float(10000)/milliseconds_per_instance), fs)
 

@@ -89,30 +89,52 @@ def main():
 
 
     if FLAGS.mode == 'final':
-        ws = int(float(0.5*60000)/milliseconds_per_instance)
-        fs = float(1000)/milliseconds_per_instance
+        window_sizes = [int(float(3000) / milliseconds_per_instance),  # 60 instances
+                        int(float(0.5 * 3000) / milliseconds_per_instance)  # 30 instances
+                        #int(float(0.25 * 3000) / milliseconds_per_instance),  # 15 instances
+                        ]
+
+        fs = int(float(300) / milliseconds_per_instance)
+        ws_fd = int(float(1 * 3000) / milliseconds_per_instance)
 
         selected_predictor_cols = [c for c in dataset.columns if not 'label' in c]
 
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mean')
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'std')
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'slope')
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'median')
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'min')
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'max')
-        # TODO: Add your own aggregation methods here 
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mad')
-        dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'entropy')
-
-        dataset = NumAbs.abstract_numerical_specific_cols(dataset, ['accel_belt_x','accel_belt_y','accel_belt_z'], ws, 'SMA')
+        triplets = [
+                    ['gyros_belt_x', 'gyros_belt_y', 'gyros_belt_z'], 
+                    ['accel_belt_x', 'accel_belt_y', 'accel_belt_z'],
+                    ['magnet_belt_x', 'magnet_belt_y', 'magnet_belt_z'], 
+                    ['gyros_arm_x', 'gyros_arm_y', 'gyros_arm_z'], 
+                    ['accel_arm_x', 'accel_arm_y', 'accel_arm_z'],
+                    ['magnet_arm_x', 'magnet_arm_y', 'magnet_arm_z'], 
+                    ['gyros_dumbbell_x', 'gyros_dumbbell_y', 'gyros_dumbbell_z'], 
+                    ['accel_dumbbell_x', 'accel_dumbbell_y', 'accel_dumbbell_z'], 
+                    ['magnet_dumbbell_x', 'magnet_dumbbell_y', 'magnet_dumbbell_z'], 
+                    ['gyros_forearm_x', 'gyros_forearm_y', 'gyros_forearm_z'],
+                    ['accel_forearm_x', 'accel_forearm_y', 'accel_forearm_z'], 
+                    ['magnet_forearm_x', 'magnet_forearm_y', 'magnet_forearm_z']
+                    ]
+        
+        for ws in window_sizes:
+            print('Calculating the {} instances window'.format(ws))
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mean')
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'std')
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'slope')
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'median')
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'min')
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'max')
+            # TODO: Add your own aggregation methods here 
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'mad')
+            dataset = NumAbs.abstract_numerical(dataset, selected_predictor_cols, ws, 'entropy')
+            for triplet in triplets:
+                dataset = NumAbs.abstract_numerical_specific_cols(dataset, triplet, ws, 'SMA')
      
         CatAbs = CategoricalAbstraction()
         dataset = CatAbs.abstract_categorical(dataset, ['label'], ['like'], 0.03, int(float(5*60000)/milliseconds_per_instance), 2)
 
         # Frequency domain feature engineering - Example list:
-        periodic_predictor_cols = ['accel_belt_x'] # Please specifiy the columns to be used.
-    
-        dataset = FreqAbs.abstract_frequency(dataset.copy(), periodic_predictor_cols, int(float(10000)/milliseconds_per_instance), fs)
+        # Please specifiy the columns to be used.
+        periodic_predictor_cols = ['magnet_dumbbell_x','yaw_forearm','accel_forearm_y','magnet_forearm_x','magnet_forearm_y']
+        dataset = FreqAbs.abstract_frequency(dataset.copy(), periodic_predictor_cols, ws_fd, fs)
 
 
         # Now we only take a certain percentage of overlap in the windows, otherwise our training examples will be too much alike.

@@ -113,8 +113,7 @@ class DistanceBasedOutlierDetection:
             ) if col_val > dmin]))/len(new_data_table.index))
             # Mark as an outlier if beyond the minimum frequency.
             mask.append(frac > fmin)
-        data_mask = pd.DataFrame(mask, index=new_data_table.index, columns=[
-                                 'simple_dist_outlier'])
+        data_mask = pd.DataFrame(mask, index=new_data_table.index, columns=[s + '_outlier' for s in cols])
         data_table = pd.concat([data_table, data_mask], axis=1)
         del self.distances
         return data_table

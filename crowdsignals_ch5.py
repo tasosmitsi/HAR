@@ -19,7 +19,7 @@ import argparse
 
 # As usual, we set our program constants, read the input file and initialize a visualization object.
 GRANULARITIES = [50]
-SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
+SUBJECT_NAMES = ['carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 def main():
@@ -155,6 +155,6 @@ if __name__ == '__main__':
         
         data.to_csv(DATA_PATH / ('HAR_4_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'))
 
-        # RESULT_FNAME = 'HAR_5_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+        DATASET_FNAME = 'HAR_4_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'
         RESULT_FNAME = 'HAR_5_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'
-        # main()
+        main()

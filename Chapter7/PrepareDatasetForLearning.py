@@ -10,8 +10,6 @@
 from sklearn.model_selection import train_test_split
 import numpy as np
 import random
-import copy
-import pandas as pd
 
 # This class creates datasets that can be used by the learning algorithms. Up till now we have
 # assumed binary columns for each class, we will for instance introduce approaches to create
@@ -20,7 +18,7 @@ class PrepareDatasetForLearning:
 
     default_label = 'undefined'
     class_col = 'class'
-    person_col = 'person'
+    person_col = 'subject_name'
 
     # This function creates a single class column based on a set of binary class columns.
     # it essentially merges them. It removes the old label columns.
@@ -38,7 +36,7 @@ class PrepareDatasetForLearning:
         for i in range(0, len(dataset.index)):
             # If we have exactly one true class column, we can assign that value,
             # otherwise we keep the default class.
-            if sum_values[i] == 1:
+            if sum_values.iloc[i] == 1:
                 dataset.iloc[i, dataset.columns.get_loc(self.class_col)] = dataset[labels].iloc[i].idxmax(axis=1)
         # And remove our old binary columns.
         dataset = dataset.drop(labels, axis=1)
@@ -86,8 +84,8 @@ class PrepareDatasetForLearning:
     def split_single_dataset_regression_by_time(self, dataset, target, start_training, end_training, end_test):
         training_instances = dataset[start_training:end_training]
         test_instances = dataset[end_training:end_test]
-        train_y = copy.deepcopy(training_instances[target])
-        test_y = copy.deepcopy(test_instances[target])
+        train_y = training_instances[target].copy()
+        test_y = test_instances[target].copy()
         train_X = training_instances
         del train_X[target]
         test_X = test_instances
@@ -139,25 +137,25 @@ class PrepareDatasetForLearning:
         if unknown_users:
             # Shuffle the users we have.
             random.seed(random_state)
-            indices = range(0, len(datasets))
+            indices = list(range(0, len(datasets)))
             random.shuffle(indices)
             training_len = int(training_frac * len(datasets))
 
             # And select the data of the first fraction training_frac of users as the training set and the data of
             # the remaining users as test set.
+
             for i in range(0, training_len):
                 # We use the single dataset function for classification and add it to the training data
-                training_set_X_person, test_set_X_person, training_set_y_person, test_set_y_person = self.split_single_dataset_classification(datasets[indices[i]], class_labels, matching,
-                                                                                                                                              1, filter=filter, temporal=temporal, random_state=random_state)
+                training_set_X_person, test_set_X_person, training_set_y_person, test_set_y_person = self.split_single_dataset_classification(datasets[indices[i]].copy(), class_labels, matching,
+                                                                                                                                              0.9, filter=filter, temporal=temporal, random_state=random_state)
                 # We add a person column.
                 training_set_X_person[self.person_col] = indices[i]
                 training_set_X = self.update_set(training_set_X, training_set_X_person)
                 training_set_y = self.update_set(training_set_y, training_set_y_person)
-
             for j in range(training_len, len(datasets)):
                 # We use the single dataset function for classification and add it to the test data
-                training_set_X_person, test_set_X_person, training_set_y_person, test_set_y_person = self.split_single_dataset_classification(datasets[indices[j]], class_labels, matching,
-                                                                                                                                              1, filter=filter, temporal=temporal, random_state=random_state)
+                training_set_X_person, test_set_X_person, training_set_y_person, test_set_y_person = self.split_single_dataset_classification(datasets[indices[j]].copy(), class_labels, matching,
+                                                                                                                                              0.9, filter=filter, temporal=temporal, random_state=random_state)
                 # We add a person column.
                 training_set_X_person[self.person_col] = indices[j]
                 test_set_X = self.update_set(test_set_X, training_set_X_person)
@@ -166,7 +164,7 @@ class PrepareDatasetForLearning:
             init = True
             # Otherwise we split each dataset individually in a training and test set and add them.
             for i in range(0, len(datasets)):
-                training_set_X_person, test_set_X_person, training_set_y_person, test_set_y_person = self.split_single_dataset_classification(datasets[i], class_labels, matching,
+                training_set_X_person, test_set_X_person, training_set_y_person, test_set_y_person = self.split_single_dataset_classification(datasets[i].copy(), class_labels, matching,
                                                                                                                                               training_frac, filter=filter, temporal=temporal, random_state=random_state)
                 # We add a person column.
                 training_set_X_person[self.person_col] = i

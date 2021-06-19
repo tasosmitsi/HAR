@@ -42,7 +42,7 @@ class NumericalAbstraction:
 
     def get_entropy(self, data):
         data = data.abs()
-        output = entropy((data/data.sum()), base = 2)
+        output = entropy(data, base = 2)
         return output
 
     # This function aggregates a list of values using the specified aggregation

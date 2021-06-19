@@ -23,11 +23,11 @@ SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 def main():
-    COLUMNS = ['gyros_belt_x', 'accel_belt_y', 'magnet_belt_z',]
+    COLUMNS = ['gyros_belt_x', 'accel_belt_y', 'magnet_belt_z']
 
     try:
         dataset = pd.read_csv(DATA_PATH / DATASET_FNAME, index_col=0)
-        dataset.index = pd.to_datetime(dataset.index)
+        # dataset.index = pd.to_datetime(dataset.index)
     except IOError as e:
         print('File not found, try to run previous crowdsignals scripts first!')
         raise e
@@ -112,13 +112,15 @@ def main():
     if FLAGS.mode == 'final':
         # And we select the outcome dataset of the knn clustering....
         clusteringNH = NonHierarchicalClustering()
-
+        # COLUMNS  = [c for c in dataset.columns if (not 'label' in c) and (not 'subject_name' in c)]
+        COLUMNS  = ['pca_1', 'pca_2', 'pca_3', 'pca_4', 'pca_5']
+        print(COLUMNS)
         dataset = clusteringNH.k_means_over_instances(dataset, COLUMNS, FLAGS.k, 'default', 50, 50)
-        DataViz.plot_clusters_3d(dataset, COLUMNS, 'cluster', ['label'])
+        # DataViz.plot_clusters_3d(dataset, COLUMNS, 'cluster', ['label'])
         DataViz.plot_silhouette(dataset, 'cluster', 'silhouette')
         util.print_latex_statistics_clusters(dataset, 'cluster', COLUMNS, 'label')
         del dataset['silhouette']
- 
+
         dataset.to_csv(DATA_PATH / RESULT_FNAME)
 
 
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 
     FLAGS, unparsed = parser.parse_known_args()
 
-    perc = 50.0 # Here N is 75
+    perc = 50.0 # Here N is 50
 
     for GRANULARITY in GRANULARITIES:
         data = pd.DataFrame()

@@ -18,8 +18,8 @@ from pathlib import Path
 import argparse
 
 # As usual, we set our program constants, read the input file and initialize a visualization object.
-GRANULARITIES = [250, 50]
-SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
+GRANULARITIES = [50]
+SUBJECT_NAMES = ['carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 def main():
@@ -132,15 +132,30 @@ if __name__ == '__main__':
                         'agglomerative' to study the effect of agglomerative clustering on a selection of variables  \
                         'final' kmeans with an optimal level of k is used for the next chapter", choices=['kmeans', 'kmedoids', 'agglomerative', 'final'])
 
-    parser.add_argument('--k', type=int, default=6,
+    parser.add_argument('--k', type=int, default=10,
                         help="The selected k number of means used in 'final' mode of this chapter' \
                         ")
 
     FLAGS, unparsed = parser.parse_known_args()
 
-    for SUBJECT_NAME in SUBJECT_NAMES:
-        for GRANULARITY in GRANULARITIES:
+    for GRANULARITY in GRANULARITIES:
+        data = pd.DataFrame()
+        for SUBJECT_NAME in SUBJECT_NAMES:
+            
             DATASET_FNAME = 'HAR_4_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
-            RESULT_FNAME = 'HAR_5_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+            try:
+                dataset = pd.read_csv(DATA_PATH / DATASET_FNAME)
+                dataset = dataset.drop(dataset.columns[0], axis=1)
+                dataset.dropna(axis=0, how='any', inplace=True)
+                dataset['subject_name'] = SUBJECT_NAME
+            except IOError as e:
+                print('File not found, try to run previous crowdsignals scripts first!')
+                raise e
+            data = pd.concat((data, dataset), ignore_index=True)
+            print(data.head)
+        
+        data.to_csv(DATA_PATH / ('HAR_4_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'))
 
-            main()
+        # RESULT_FNAME = 'HAR_5_' + SUBJECT_NAME + '_g' + str(GRANULARITY) + '_result.csv'
+        RESULT_FNAME = 'HAR_5_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'
+        # main()

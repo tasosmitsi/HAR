@@ -19,7 +19,7 @@ import argparse
 
 # As usual, we set our program constants, read the input file and initialize a visualization object.
 GRANULARITIES = [50]
-SUBJECT_NAMES = ['carlitos', 'charles', 'eurico', 'pedro']
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 def main():
@@ -146,13 +146,12 @@ if __name__ == '__main__':
             try:
                 dataset = pd.read_csv(DATA_PATH / DATASET_FNAME)
                 dataset = dataset.drop(dataset.columns[0], axis=1)
-                dataset.dropna(axis=0, how='any', inplace=True)
+                # dataset.dropna(axis=0, how='any', inplace=True)
                 dataset['subject_name'] = SUBJECT_NAME
             except IOError as e:
                 print('File not found, try to run previous crowdsignals scripts first!')
                 raise e
             data = pd.concat((data, dataset), ignore_index=True)
-            print(data.head)
         
         data.to_csv(DATA_PATH / ('HAR_4_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'))
 

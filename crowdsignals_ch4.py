@@ -20,7 +20,7 @@ from Chapter4.FrequencyAbstraction import FourierTransformation
 
 # Read the result from the previous chapter, and make sure the index is of the type datetime.
 GRANULARITIES = [50]
-SUBJECT_NAMES = ['jeremy']
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 # Include the columns you want to experiment with. It works only with aggregation and frequency methods NOT final.
@@ -128,8 +128,8 @@ def main():
             for triplet in triplets:
                 dataset = NumAbs.abstract_numerical_specific_cols(dataset, triplet, ws, 'SMA')
      
-        CatAbs = CategoricalAbstraction()
-        dataset = CatAbs.abstract_categorical(dataset, ['label'], ['like'], 0.03, int(float(5*60000)/milliseconds_per_instance), 2)
+        # CatAbs = CategoricalAbstraction()
+        # dataset = CatAbs.abstract_categorical(dataset, ['label'], ['like'], 0.03, int(float(5*60000)/milliseconds_per_instance), 2)
 
         # Frequency domain feature engineering - Example list:
         # Please specifiy the columns to be used.

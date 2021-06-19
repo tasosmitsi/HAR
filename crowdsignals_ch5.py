@@ -19,11 +19,11 @@ import argparse
 
 # As usual, we set our program constants, read the input file and initialize a visualization object.
 GRANULARITIES = [50]
-SUBJECT_NAMES = ['carlitos', 'charles', 'eurico', 'pedro']
+SUBJECT_NAMES = ['jeremy', 'adelmo', 'carlitos', 'charles', 'eurico', 'pedro']
 DATA_PATH = Path('./intermediate_datafiles/')
 
 def main():
-    COLUMNS = ['roll_belt','pitch_belt','yaw_belt']
+    COLUMNS = ['gyros_belt_x', 'accel_belt_y', 'magnet_belt_z',]
 
     try:
         dataset = pd.read_csv(DATA_PATH / DATASET_FNAME, index_col=0)
@@ -32,7 +32,7 @@ def main():
         print('File not found, try to run previous crowdsignals scripts first!')
         raise e
 
-    DataViz = VisualizeDataset('HAR_5_{}_g{}_{}'.format(SUBJECT_NAME, GRANULARITY, FLAGS.mode))
+    DataViz = VisualizeDataset('HAR_5_{}_g{}_{}'.format('all', GRANULARITY, FLAGS.mode))
 
     clusteringNH = NonHierarchicalClustering()
     clusteringH = HierarchicalClustering()
@@ -118,7 +118,7 @@ def main():
         DataViz.plot_silhouette(dataset, 'cluster', 'silhouette')
         util.print_latex_statistics_clusters(dataset, 'cluster', COLUMNS, 'label')
         del dataset['silhouette']
-
+ 
         dataset.to_csv(DATA_PATH / RESULT_FNAME)
 
 
@@ -138,6 +138,8 @@ if __name__ == '__main__':
 
     FLAGS, unparsed = parser.parse_known_args()
 
+    perc = 50.0 # Here N is 75
+
     for GRANULARITY in GRANULARITIES:
         data = pd.DataFrame()
         for SUBJECT_NAME in SUBJECT_NAMES:
@@ -146,13 +148,18 @@ if __name__ == '__main__':
             try:
                 dataset = pd.read_csv(DATA_PATH / DATASET_FNAME)
                 dataset = dataset.drop(dataset.columns[0], axis=1)
-                # dataset.dropna(axis=0, how='any', inplace=True)
+
+                min_count =  int(((100-perc)/100)*dataset.shape[1] + 1)
+                dataset.dropna(axis=0, thresh=min_count, inplace=True)
+
                 dataset['subject_name'] = SUBJECT_NAME
             except IOError as e:
                 print('File not found, try to run previous crowdsignals scripts first!')
                 raise e
             data = pd.concat((data, dataset), ignore_index=True)
-        
+            data.dropna(axis=1, how='any', inplace=True)
+
+
         data.to_csv(DATA_PATH / ('HAR_4_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'))
 
         DATASET_FNAME = 'HAR_4_' + 'all' + '_g' + str(GRANULARITY) + '_result.csv'
